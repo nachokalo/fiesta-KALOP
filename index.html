@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KALOP · Control de ingreso</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#54585b">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+<style>
+/* Two big doors: blue Invitados, orange Personal. Same colors as each app's band. */
+:root { --bg: #f1f3f4; --fg: #2a2e31; --muted: #54585b; --blue: #009ee2; --orange: #fd6b00; --card: #ffffff; --line: #d9dddf;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --bg: #1a1c1e; --fg: #eceeef; --muted: #a6abaf; --card: #24272a; --line: #363a3e; color-scheme: dark; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--display); }
+body { padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+main { max-width: 520px; margin: 0 auto; display: grid; gap: 18px; }
+.logo { display: block; width: 100%; max-width: 280px; height: auto; margin: 8px auto 4px; }
+.logo.dark { display: none; }
+@media (prefers-color-scheme: dark) { .logo.light { display: none; } .logo.dark { display: block; } }
+p { margin: 0; text-align: center; color: var(--muted); font-size: 15px; }
+a.door { display: grid; gap: 6px; text-decoration: none; color: #fff; border-radius: 18px; padding: 26px 22px; min-height: 140px; align-content: center; }
+a.door:focus-visible { outline: 4px solid var(--fg); outline-offset: 3px; }
+a.door strong { font-weight: 900; font-stretch: 115%; font-size: clamp(26px, 8vw, 36px); letter-spacing: 0.05em; text-transform: uppercase; line-height: 1.05; }
+a.door span { font-weight: 700; font-size: 15px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.92; }
+.inv { background: var(--blue); }
+.per { background: #2a2e32; border-left: 14px solid var(--orange); }
+.per strong { color: var(--orange); }
+.nota { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; font-size: 14px; color: var(--muted); line-height: 1.45; text-align: left; }
+</style>
+</head>
+<body>
+<main>
+  <img class="logo light" src="logo.png" alt="KALOP" width="280" height="37">
+  <img class="logo dark" src="logo-dark.png" alt="KALOP" width="280" height="37">
+  <p>Control de ingreso · elegí qué vas a controlar</p>
+  <a class="door inv" href="invitados.html"><strong>Invitados</strong><span>Clientes · verificar DNI</span></a>
+  <a class="door per" href="personal.html"><strong>Personal contratado</strong><span>Entrada y salida</span></a>
+  <div class="nota">Consejo: abrí la que te toca y agregala a la pantalla de inicio (Compartir → Agregar a inicio en iPhone, menú ⋮ → Agregar a pantalla principal en Android).</div>
+</main>
+</body>
+</html>
