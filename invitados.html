@@ -225,6 +225,20 @@ main, .section, .alertas { grid-template-columns: minmax(0, 1fr); }
 .tools .more { flex: 1 1 100%; text-align: left; }
 .setup { display: grid; gap: 10px; }
 .setup .btn { margin-top: 6px; }
+.sugerida { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; background: var(--surface); border: 2px dashed var(--primary); border-radius: 12px; padding: 12px 14px; font-weight: 700; margin-top: -6px; }
+#btn-alta { width: 100%; min-height: 52px; font-size: 16px; border-style: dashed; }
+.alta { display: grid; gap: 10px; border: 2px solid var(--primary); }
+.alta label, .alta legend { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.alta .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.alta .dos > div { display: grid; gap: 6px; min-width: 0; }
+.alta fieldset { border: 0; padding: 0; margin: 4px 0 0; display: grid; gap: 8px; min-width: 0; }
+.alta .op { display: flex; gap: 10px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-size: 15px; font-weight: 600; color: var(--fg); text-transform: none; letter-spacing: 0; cursor: pointer; }
+.alta .op:has(input:checked) { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
+.alta .op input { width: 20px; height: 20px; accent-color: var(--primary); flex: none; }
+.alta .sel { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--ok-soft); color: var(--fg); font-weight: 700; }
+.alta .botones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.alta .botones .btn[type="submit"] { flex: 1 1 200px; }
+@media (max-width: 360px) { .alta .dos { grid-template-columns: 1fr; } }
 .confirmar { display: grid; gap: 10px; background: var(--warn-soft); border: 2px solid var(--warn); border-radius: 12px; padding: 12px 14px; font-size: 15px; font-weight: 600; color: var(--fg); margin-top: -6px; }
 .confirmar-btns { display: flex; flex-wrap: wrap; gap: 8px; }
 body[data-app="personal"] .big-input { font-size: clamp(22px, 6vw, 40px); }
@@ -290,11 +304,47 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
         <button id="btn-deshacer" class="btn ghost small" type="button">Deshacer</button>
       </div>
 
+      <div id="alta-sugerida" class="sugerida" hidden>
+        <span>¿Es alguien que no estaba previsto?</span>
+        <button id="btn-alta-sug" class="btn small" type="button">Agregar persona</button>
+      </div>
+
+      <form id="form-alta" class="card alta" autocomplete="off" hidden>
+        <h2>Agregar persona no prevista</h2>
+        <p class="more" style="text-align:left">Queda en la planilla con su ingreso y a quién reemplaza o acompaña.</p>
+        <label for="alta-dni">DNI</label>
+        <input id="alta-dni" class="mid-input" inputmode="numeric" maxlength="11" placeholder="00.000.000">
+        <div class="dos">
+          <div><label for="alta-nombre">Nombre</label><input id="alta-nombre" class="mid-input" maxlength="40" autocapitalize="words"></div>
+          <div><label for="alta-apellido">Apellido</label><input id="alta-apellido" class="mid-input" maxlength="40" autocapitalize="words"></div>
+        </div>
+        <fieldset>
+          <legend>¿Por qué viene?</legend>
+          <label class="op"><input type="radio" name="alta-motivo" value="reemplazo"> Reemplaza a un invitado que no viene</label>
+          <label class="op"><input type="radio" name="alta-motivo" value="acompanante"> Acompaña a un invitado</label>
+          <label class="op"><input type="radio" name="alta-motivo" value="otro"> No está invitado (viene de parte de alguien)</label>
+        </fieldset>
+        <div id="alta-ref-box" class="setup" hidden>
+          <label for="alta-ref-buscar" id="alta-ref-label">¿A qué invitado?</label>
+          <input id="alta-ref-buscar" type="search" class="mid-input" placeholder="Apellido, nombre o DNI del invitado">
+          <ul id="alta-ref-res" class="list" hidden></ul>
+          <div id="alta-ref-sel" class="sel" hidden></div>
+        </div>
+        <label for="alta-nota" id="alta-nota-label">Comentario (opcional)</label>
+        <input id="alta-nota" class="mid-input" maxlength="100" placeholder="Ej.: cliente Ferretería López · autorizó Ale">
+        <span id="alta-error" class="err" role="alert" hidden></span>
+        <div class="botones">
+          <button class="btn" type="submit">Registrar ingreso</button>
+          <button id="alta-cancelar" class="btn ghost" type="button">Cancelar</button>
+        </div>
+      </form>
+
       <details id="buscar-box" class="buscar">
         <summary>¿No tiene el DNI? Buscar por nombre</summary>
         <input id="buscar" type="search" class="mid-input" placeholder="Apellido o nombre" autocomplete="off" aria-label="Buscar por apellido o nombre">
         <ul id="resultados" class="list" hidden></ul>
       </details>
+      <button id="btn-alta" class="btn ghost" type="button" hidden>＋ Agregar persona no prevista</button>
 
       <div class="stats">
         <div class="stats-row">
@@ -385,7 +435,7 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
   /* ---------- Local list ---------- */
   function fromRow(r) {
     return P ? { dni: r[0], nombre: r[1], emp: r[2], est: r[3], h: r[4], hs: r[5], por: r[6], te: r[8] || 0, ts: r[9] || 0 }
-             : { dni: r[0], nombre: r[1], a: r[2], o: r[3], est: !!r[4], h: r[5], por: r[6] };
+             : { dni: r[0], nombre: r[1], a: r[2], o: r[3], est: !!r[4], h: r[5], por: r[6], alta: r[8] || "", vinc: r[9] || "" };
   }
   function aplicarLista(d) {
     S.lista = new Map(d.items.map((r) => [r[0], fromRow(r)]));
@@ -395,7 +445,28 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
     S.pend.forEach(aplicarLocal);
     render();
   }
+  const ALTA_TIPO = { reemplazo: "Reemplazo", acompanante: "Acompañante", otro: "Sin invitación" };
+  const ALTAS = Object.values(ALTA_TIPO);
+  function vincAlta(it) {
+    const r = S.lista.get(it.ref);
+    const quien = r ? `${r.nombre} (DNI ${fmtDni(r.dni)})` : `DNI ${fmtDni(it.ref)}`;
+    if (it.motivo === "reemplazo") return `Reemplaza a ${quien}` + (it.nota ? ` · ${it.nota}` : "");
+    if (it.motivo === "acompanante") return `Acompaña a ${quien}` + (it.nota ? ` · ${it.nota}` : "");
+    return `De parte de: ${it.nota}`;
+  }
+  function revertirAlta(it) {
+    S.lista.delete(it.dni);
+    const r = S.lista.get(it.ref);
+    if (it.motivo === "reemplazo" && r && it.refPrev) Object.assign(r, it.refPrev);
+  }
   function aplicarLocal(it) {
+    if (it.tipo === "alta") {
+      if (!S.lista.has(it.dni)) S.lista.set(it.dni, { dni: it.dni, nombre: it.nombre, a: it.acomp || 0, o: it.obs || "", est: true, h: it.hora, por: S.guardia, alta: ALTA_TIPO[it.motivo], vinc: it.vinc || vincAlta(it) });
+      const r = S.lista.get(it.ref);
+      if (it.motivo === "reemplazo" && r) Object.assign(r, { alta: "Reemplazado", vinc: `Por ${it.nombre} (DNI ${fmtDni(it.dni)})` });
+      return;
+    }
+    if (it.tipo === "deshacer" && it.motivo) { revertirAlta(it); return; }
     const g = S.lista.get(it.dni);
     if (!g) return;
     if (it.tipo === "in") Object.assign(g, { est: true, h: it.hora, por: S.guardia });
@@ -436,7 +507,7 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
     pintarRed();
     let seguir = false;
     try {
-      const res = await call("sincronizar", MODO, S.pin, S.guardia, lote.map(({ id, tipo, dni, t }) => ({ id, tipo, dni, t })));
+      const res = await call("sincronizar", MODO, S.pin, S.guardia, lote.map(({ id, tipo, dni, t, nombre, motivo, ref, nota }) => ({ id, tipo, dni, t, nombre, motivo, ref, nota })));
       if (res && res.error === "pin") { pedirSetup("El PIN cambió o es incorrecto. Escribilo de nuevo."); return; }
       if (!res || !res.ok) throw new Error((res && res.error) || "error");
       S.syncSeq++;
@@ -473,6 +544,24 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
       return;
     }
     marcarHist(it.id, "conf");
+    if (it.tipo === "alta" && r.r !== "ya") {
+      revertirAlta(it);
+      if (S.verdictId === it.id) { hideUndo(); showVerdict("bad", "No se registró", it.nombre, `DNI ${fmtDni(it.dni)}`); }
+      const motivo = {
+        refingreso: `${r.ref} ya había ingresado, así que no se lo puede reemplazar. Si viene con él, cargalo como acompañante.`,
+        refreemplazado: `${r.ref} ya había sido reemplazado (${r.vinc}).`,
+        sinref: "el invitado elegido ya no figura en la lista.",
+        otro: "ese DNI es de personal contratado.",
+      }[r.r] || "hubo un error.";
+      alerta(`No se registró a ${it.nombre} (DNI ${fmtDni(it.dni)}): ${motivo}`);
+      return;
+    }
+    if (r.r === "reemplazado") {
+      if (g) Object.assign(g, { est: false, alta: "Reemplazado", vinc: r.vinc });
+      alerta(`${quien} fue reemplazado (${r.vinc}). Este ingreso no se registró: consultá con el organizador.`);
+      if (S.verdictId === it.id) { hideUndo(); showVerdict("warn", "Este invitado fue reemplazado", nombre, `DNI ${fmtDni(it.dni)} · ${r.vinc}`); }
+      return;
+    }
     if (r.r === "ya") {
       if (g) Object.assign(g, { est: true, h: r.hora, por: r.por });
       alerta(`${quien} ya había ingresado a las ${r.hora}${r.por ? ` (registró ${r.por})` : ""}. Este ingreso no se registró: revisá a la persona.`);
@@ -496,6 +585,7 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
   /* ---------- Controls ---------- */
   async function controlar(raw, forzar) {
     hideConfirm();
+    $("alta-sugerida").hidden = true;
     const dni = onlyDigits(raw);
     if (dni.length < 6 || dni.length > 9) { showVerdict("bad", "DNI incompleto", "", "Revisá el número: debe tener entre 7 y 8 dígitos"); feedback("bad"); return; }
     $("dni").value = "";
@@ -512,9 +602,16 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
       else showVerdict("bad", T.no, "", `DNI ${fmtDni(dni)}` + (S.online ? "" : ` · sin conexión: lista de las ${S.listaHora || "–"}`));
       feedback("bad");
       addHist({ dni, r: otro ? "otro" : "no" });
+      if (!P && !otro) { S.altaDni = dni; $("alta-sugerida").hidden = false; }
       return;
     }
     if (!P) {
+      if (g.alta === "Reemplazado" && !g.est) {
+        showVerdict("warn", "Este invitado fue reemplazado", g.nombre, `DNI ${fmtDni(dni)} · ${g.vinc}`);
+        feedback("bad");
+        addHist({ dni, r: "reemplazado", nombre: g.nombre });
+        return;
+      }
       if (g.est) {
         showVerdict("warn", MSG_YA, g.nombre, `DNI ${fmtDni(dni)}` + (g.h ? ` · ingresó a las ${g.h}` : "") + (g.por ? ` · registró ${g.por}` : ""));
         feedback("bad");
@@ -588,7 +685,12 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
       // Not sent yet: just drop it.
       S.pend.splice(i, 1);
       store.set("pend", S.pend);
-      if (g) Object.assign(g, u.prev);
+      if (u.tipo === "alta") revertirAlta(u);
+      else if (g) Object.assign(g, u.prev);
+    } else if (u.tipo === "alta") {
+      const it = nuevoItem("deshacer", u.dni, { motivo: u.motivo, ref: u.ref, refPrev: u.refPrev });
+      aplicarLocal(it);
+      encolar(it);
     } else {
       const it = nuevoItem("deshacer", u.dni, { prev: u.prev });
       aplicarLocal(it);
@@ -598,6 +700,102 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
     showVerdict("idle", "Movimiento anulado", "", `DNI ${fmtDni(u.dni)} · quedó como estaba antes`);
     S.verdictId = null;
     feedback("out");
+    render();
+  }
+
+  /* ---------- Manual add (Invitados) ---------- */
+  const A = { ref: null };
+  function motivoAlta() { const r = document.querySelector('input[name="alta-motivo"]:checked'); return r ? r.value : ""; }
+  function errorAlta(t) { $("alta-error").hidden = !t; $("alta-error").textContent = t || ""; }
+  function abrirAlta(dni) {
+    $("alta-sugerida").hidden = true;
+    $("form-alta").hidden = false;
+    $("alta-dni").value = dni ? fmtDni(dni) : "";
+    ["alta-nombre", "alta-apellido", "alta-nota", "alta-ref-buscar"].forEach((id) => { $(id).value = ""; });
+    document.querySelectorAll('input[name="alta-motivo"]').forEach((r) => { r.checked = false; });
+    A.ref = null;
+    errorAlta("");
+    actualizarMotivo();
+    $("form-alta").scrollIntoView({ block: "start", behavior: "smooth" });
+    (dni ? $("alta-nombre") : $("alta-dni")).focus();
+  }
+  function cerrarAlta() { $("form-alta").hidden = true; $("dni").focus(); }
+  function actualizarMotivo() {
+    const m = motivoAlta();
+    $("alta-ref-box").hidden = !(m === "reemplazo" || m === "acompanante");
+    $("alta-ref-label").textContent = m === "reemplazo" ? "¿A qué invitado reemplaza?" : "¿A qué invitado acompaña?";
+    $("alta-nota-label").textContent = m === "otro" ? "¿De parte de quién viene? (obligatorio)" : "Comentario (opcional)";
+    $("alta-nota").placeholder = m === "otro" ? "Ej.: cliente Ferretería López · autorizó Ale" : "Ej.: autorizó Ale";
+    if (A.ref && m === "reemplazo" && (A.ref.est || A.ref.alta === "Reemplazado")) A.ref = null;
+    pintarRef();
+  }
+  function pintarRef() {
+    const sel = $("alta-ref-sel");
+    sel.hidden = !A.ref;
+    $("alta-ref-buscar").hidden = !!A.ref;
+    $("alta-ref-res").hidden = true;
+    sel.replaceChildren();
+    if (!A.ref) return;
+    sel.append(span("", `${A.ref.nombre || "(sin nombre)"} · DNI ${fmtDni(A.ref.dni)}`));
+    const b = Object.assign(document.createElement("button"), { type: "button", className: "btn ghost small", textContent: "Cambiar" });
+    b.addEventListener("click", () => { A.ref = null; $("alta-ref-buscar").value = ""; pintarRef(); $("alta-ref-buscar").focus(); });
+    sel.append(b);
+  }
+  function buscarRef() {
+    const ul = $("alta-ref-res");
+    const q = norm($("alta-ref-buscar").value.trim());
+    const qd = onlyDigits(q);
+    ul.replaceChildren();
+    ul.hidden = q.length < 2;
+    if (q.length < 2) return;
+    const reemplazo = motivoAlta() === "reemplazo";
+    const partes = q.split(/\s+/);
+    const res = [...S.lista.values()]
+      .filter((g) => (qd.length >= 3 && g.dni.includes(qd)) || partes.every((p) => norm(g.nombre).includes(p)))
+      .slice(0, 8);
+    if (!res.length) { ul.append(Object.assign(document.createElement("li"), { className: "empty", textContent: "Ningún invitado coincide." })); return; }
+    for (const g of res) {
+      const row = document.createElement("li");
+      const mid = document.createElement("div"); mid.style.minWidth = "0";
+      mid.append(span("nm", g.nombre || "(sin nombre)"), document.createElement("br"), span("d", fmtDni(g.dni)));
+      const b = Object.assign(document.createElement("button"), { type: "button", className: "btn small" });
+      const bloqueado = reemplazo && (g.est ? "Ya ingresó" : g.alta === "Reemplazado" ? "Ya reemplazado" : "");
+      b.textContent = bloqueado || "Elegir";
+      b.disabled = !!bloqueado;
+      b.addEventListener("click", () => { A.ref = g; pintarRef(); errorAlta(""); });
+      const acc = document.createElement("div"); acc.className = "acc"; acc.append(b);
+      row.append(mid, acc);
+      ul.append(row);
+    }
+  }
+  function registrarAlta() {
+    const dni = onlyDigits($("alta-dni").value);
+    const nombre = $("alta-nombre").value.trim().replace(/\s+/g, " ");
+    const apellido = $("alta-apellido").value.trim().replace(/\s+/g, " ");
+    const motivo = motivoAlta();
+    const nota = $("alta-nota").value.trim().replace(/\s+/g, " ");
+    if (dni.length < 6 || dni.length > 9) return errorAlta("Revisá el DNI: debe tener entre 7 y 8 dígitos.");
+    if (S.otros.has(dni)) return errorAlta("Ese DNI es de personal contratado: usá el sistema de Personal.");
+    if (S.lista.has(dni)) { cerrarAlta(); controlar(dni); return; }
+    if (!nombre || !apellido) return errorAlta("Completá nombre y apellido.");
+    if (!motivo) return errorAlta("Elegí por qué viene.");
+    if (motivo !== "otro" && !A.ref) return errorAlta("Buscá y elegí al invitado " + (motivo === "reemplazo" ? "al que reemplaza." : "al que acompaña."));
+    if (motivo === "otro" && !nota) return errorAlta("Escribí de parte de quién viene.");
+    const ref = A.ref;
+    const completo = `${nombre} ${apellido}`;
+    const it = nuevoItem("alta", dni, {
+      nombre: completo, motivo, nota, ref: ref ? ref.dni : "",
+      acomp: motivo === "reemplazo" ? ref.a : 0, obs: motivo === "reemplazo" ? ref.o : "",
+      refPrev: ref ? { alta: ref.alta || "", vinc: ref.vinc || "" } : null,
+    });
+    it.vinc = vincAlta(it);
+    aplicarLocal(it);
+    cerrarAlta();
+    showVerdict("ok", "VÁLIDO", completo, `DNI ${fmtDni(dni)} · ${it.hora} · agregado en la puerta`, { acomp: it.acomp, nota: it.vinc + (it.obs ? ` · ${it.obs}` : ""), id: it.id });
+    feedback("ok");
+    addHist({ id: it.id, dni, r: "alta", nombre: completo });
+    ofrecerDeshacer(it, `¿Error con ${fmtDni(dni)}? Anulá este agregado.`);
+    encolar(it);
     render();
   }
 
@@ -620,7 +818,7 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
   }
 
   function render() {
-    const all = [...S.lista.values()];
+    const all = [...S.lista.values()].filter((g) => g.alta !== "Reemplazado");
     let a, b;
     if (P) { a = all.filter((g) => g.est === "Adentro").length; b = all.length - a; }
     else { a = all.filter((g) => g.est).length; b = all.length - a; }
@@ -631,8 +829,10 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
     if (!P) {
       const acomp = all.reduce((s, g) => s + (Number(g.a) || 0), 0);
       const personas = all.filter((g) => g.est).reduce((s, g) => s + 1 + (Number(g.a) || 0), 0);
-      $("s-extra").hidden = !acomp;
-      $("s-extra").textContent = `Contando acompañantes: ${personas.toLocaleString("es-AR")} personas adentro de ${(all.length + acomp).toLocaleString("es-AR")}`;
+      const altas = all.filter((g) => ALTAS.includes(g.alta)).length;
+      $("s-extra").hidden = !acomp && !altas;
+      $("s-extra").textContent = [acomp ? `Contando acompañantes: ${personas.toLocaleString("es-AR")} personas adentro de ${(all.length + acomp).toLocaleString("es-AR")}` : "",
+        altas ? `${altas} agregado${altas > 1 ? "s" : ""} en la puerta` : ""].filter(Boolean).join(" · ");
     }
     if (S.cargada && !all.length) setNotice(`<span><strong>Lista vacía.</strong> ${T.vacia}</span>`, true);
     else if (!demo) setNotice("");
@@ -676,6 +876,7 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
   const PILLS = {
     ok: ["pill ok", "Válido"], ya: ["pill warn", "Ya ingresó"], entrada: ["pill ok", "Entrada"], salida: ["pill out", "Salida"],
     otro: ["pill bad", P ? "Es invitado" : "Es personal"], no: ["pill bad", "No está"], duda: ["pill warn", "Consultó"],
+    alta: ["pill ok", "Agregado"], reemplazado: ["pill warn", "Reemplazado"],
   };
   const ESTADOS = { pend: "enviando…", ok: "✓ en planilla", conf: "⚠ revisar", anulado: "anulado" };
   function addHist(h) {
@@ -726,6 +927,7 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
       b.type = "button"; b.className = "btn small";
       if (P) b.textContent = g.est === "Adentro" ? "Registrar salida" : "Registrar entrada";
       else if (g.est) { b.textContent = "Ya ingresó"; b.disabled = true; }
+      else if (g.alta === "Reemplazado") { b.textContent = "Reemplazado"; b.disabled = true; }
       else b.textContent = "Registrar ingreso";
       b.addEventListener("click", () => {
         $("buscar").value = ""; renderBusqueda(); $("buscar-box").open = false;
@@ -831,6 +1033,16 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
   $("btn-deshacer").addEventListener("click", deshacer);
   $("btn-cancelar").addEventListener("click", () => { hideConfirm(); showVerdict("idle", "No se registró nada", "", "Cancelado"); $("dni").focus(); });
   $("buscar").addEventListener("input", renderBusqueda);
+  if (!P) {
+    $("btn-alta").hidden = false;
+    $("btn-alta").addEventListener("click", () => abrirAlta(""));
+    $("btn-alta-sug").addEventListener("click", () => abrirAlta(S.altaDni));
+    $("alta-cancelar").addEventListener("click", cerrarAlta);
+    $("alta-dni").addEventListener("input", (e) => { e.target.value = fmtDni(onlyDigits(e.target.value).slice(0, 9)); });
+    document.querySelectorAll('input[name="alta-motivo"]').forEach((r) => r.addEventListener("change", actualizarMotivo));
+    $("alta-ref-buscar").addEventListener("input", buscarRef);
+    $("form-alta").addEventListener("submit", (e) => { e.preventDefault(); registrarAlta(); });
+  }
   $("chip-guardia").addEventListener("click", () => pedirSetup(""));
   $("btn-actualizar").addEventListener("click", async () => { $("tools-info").textContent = "Actualizando…"; const ok = await refrescar(true); if (ok === null) $("tools-info").textContent = "Sin conexión: se usa la lista guardada en el celular."; sync(); });
   $("btn-sonido").addEventListener("click", () => { S.sonido = !S.sonido; store.set("sonido", S.sonido); $("btn-sonido").textContent = S.sonido ? "Sonido: sí" : "Sonido: no"; if (S.sonido) feedback("ok"); });
@@ -861,7 +1073,7 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
       if (v && v === String(this.v)) return { same: true, v: String(this.v) };
       const items = Object.entries(this.data).map(([dni, d], i) => {
         const s = this.st[dni] || {};
-        return P ? [dni, d[0], d[1], s.est || "", s.h || "", s.hs || "", s.por || "", i + 2, s.te || 0, s.ts || 0] : [dni, d[0], d[1], d[2], !!s.est, s.h || "", s.por || "", i + 2];
+        return P ? [dni, d[0], d[1], s.est || "", s.h || "", s.hs || "", s.por || "", i + 2, s.te || 0, s.ts || 0] : [dni, d[0], d[1], d[2], !!s.est, s.h || "", s.por || "", i + 2, s.alta || "", s.vinc || ""];
       });
       return { v: String(this.v), items, otros: this.otros };
     },
@@ -870,6 +1082,17 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
       const res = items.map((it) => {
         const s = this.st[it.dni] = this.st[it.dni] || {};
         const h = new Date(it.t).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false });
+        if (it.tipo === "alta") {
+          if (this.otros.includes(it.dni)) return { id: it.id, r: "otro" };
+          const ref = this.st[it.ref] = this.st[it.ref] || {};
+          if (it.motivo === "reemplazo" && ref.est) return { id: it.id, r: "refingreso", ref: (this.data[it.ref] || [""])[0] };
+          this.data[it.dni] = [it.nombre, 0, ""];
+          Object.assign(s, { est: true, h, por: guardia, alta: { reemplazo: "Reemplazo", acompanante: "Acompañante" }[it.motivo] || "Sin invitación", vinc: "manual" });
+          if (it.motivo === "reemplazo") Object.assign(ref, { alta: "Reemplazado", vinc: "Por " + it.nombre });
+          this.v++;
+          return { id: it.id, r: "ok", hora: h };
+        }
+        if (it.tipo === "deshacer" && it.motivo) { delete this.data[it.dni]; delete this.st[it.dni]; if (it.ref && this.st[it.ref]) Object.assign(this.st[it.ref], { alta: "", vinc: "" }); this.v++; return { id: it.id, r: "ok" }; }
         if (!this.data[it.dni] && it.tipo !== "deshacer") return { id: it.id, r: this.otros.includes(it.dni) ? "otro" : "no" };
         if (it.tipo === "deshacer") { if (s.prev) Object.assign(s, s.prev); else Object.assign(s, { est: "", h: "", hs: "", por: "" }); this.v++; return { id: it.id, r: "ok" }; }
         if (it.tipo === "in") { if (s.est) return { id: it.id, r: s.por === guardia ? "ok" : "ya", hora: s.h, por: s.por }; s.prev = { ...s }; Object.assign(s, { est: true, h, por: guardia }); }
