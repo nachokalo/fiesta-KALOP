@@ -4,7 +4,7 @@
 <base target="_top">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>KALOP · Personal contratado</title>
+<title>KALOP · Personal y Externos</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <style>
@@ -172,7 +172,7 @@ h2 { font-family: var(--display); font-size: 15px; font-weight: 800; text-transf
 <link rel="manifest" href="manifest-personal.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="apple-mobile-web-app-title" content="KALOP Personal">
+<meta name="apple-mobile-web-app-title" content="KALOP Externos">
 <meta name="theme-color" content="#fd6b00">
 <style>
 /* v3: shared by Invitados (light, blue band) and Personal (dark, orange band). */
@@ -376,13 +376,13 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
   const MODO = document.body.dataset.app === "personal" ? "personal" : "invitados";
   const P = MODO === "personal";
   const T = P ? {
-    banda: "Personal contratado", sub: "Entrada / salida", dni: "DNI de la persona contratada", boton: "Registrar",
+    banda: "Personal y Externos", sub: "Entrada / salida", dni: "DNI (personal o externo)", boton: "Registrar",
     otro: "Este DNI es de un INVITADO", otroMeta: "Usá el sistema de Invitados (franja celeste)",
-    no: "Este DNI no se encuentra en la lista de personal",
-    s: ["Adentro ahora", "Afuera", "Personal"], vacia: "La lista de personal está vacía. El organizador todavía no la cargó (hoja Personal).",
+    no: "Este DNI no se encuentra en la lista de Personal y Externos",
+    s: ["Adentro ahora", "Afuera", "En la lista"], vacia: "La lista de Personal y Externos está vacía. El organizador todavía no la cargó (hoja Personal).",
   } : {
     banda: "Invitados", sub: "Clientes", dni: "DNI del invitado", boton: "Verificar",
-    otro: "Este DNI es de PERSONAL CONTRATADO", otroMeta: "Usá el sistema de Personal (franja naranja)",
+    otro: "Este DNI es de PERSONAL Y EXTERNOS", otroMeta: "Usá el sistema de Personal y Externos (franja naranja)",
     no: "Este DNI no se encuentra en la base de datos",
     s: ["Ingresaron", "Faltan", "Invitados"], vacia: "La lista de invitados está vacía. El organizador todavía no la cargó.",
   };
@@ -551,7 +551,7 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
         refingreso: `${r.ref} ya había ingresado, así que no se lo puede reemplazar. Si viene con él, cargalo como acompañante.`,
         refreemplazado: `${r.ref} ya había sido reemplazado (${r.vinc}).`,
         sinref: "el invitado elegido ya no figura en la lista.",
-        otro: "ese DNI es de personal contratado.",
+        otro: "ese DNI está en Personal y Externos.",
       }[r.r] || "hubo un error.";
       alerta(`No se registró a ${it.nombre} (DNI ${fmtDni(it.dni)}): ${motivo}`);
       return;
@@ -775,7 +775,7 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
     const motivo = motivoAlta();
     const nota = $("alta-nota").value.trim().replace(/\s+/g, " ");
     if (dni.length < 6 || dni.length > 9) return errorAlta("Revisá el DNI: debe tener entre 7 y 8 dígitos.");
-    if (S.otros.has(dni)) return errorAlta("Ese DNI es de personal contratado: usá el sistema de Personal.");
+    if (S.otros.has(dni)) return errorAlta("Ese DNI está en Personal y Externos: usá ese sistema (franja naranja).");
     if (S.lista.has(dni)) { cerrarAlta(); controlar(dni); return; }
     if (!nombre || !apellido) return errorAlta("Completá nombre y apellido.");
     if (!motivo) return errorAlta("Elegí por qué viene.");
@@ -875,7 +875,7 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
 
   const PILLS = {
     ok: ["pill ok", "Válido"], ya: ["pill warn", "Ya ingresó"], entrada: ["pill ok", "Entrada"], salida: ["pill out", "Salida"],
-    otro: ["pill bad", P ? "Es invitado" : "Es personal"], no: ["pill bad", "No está"], duda: ["pill warn", "Consultó"],
+    otro: ["pill bad", P ? "Es invitado" : "Es externo"], no: ["pill bad", "No está"], duda: ["pill warn", "Consultó"],
     alta: ["pill ok", "Agregado"], reemplazado: ["pill warn", "Reemplazado"],
   };
   const ESTADOS = { pend: "enviando…", ok: "✓ en planilla", conf: "⚠ revisar", anulado: "anulado" };

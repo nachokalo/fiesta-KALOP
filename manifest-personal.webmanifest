@@ -1,6 +1,6 @@
 {
-  "name": "KALOP · Personal contratado",
-  "short_name": "KALOP Personal",
+  "name": "KALOP · Personal y Externos",
+  "short_name": "KALOP Externos",
   "start_url": "personal.html",
   "scope": "./",
   "display": "standalone",
