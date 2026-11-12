@@ -364,7 +364,6 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
       <div class="tools">
         <button id="btn-actualizar" class="btn ghost small" type="button">Actualizar lista</button>
         <button id="btn-sonido" class="btn ghost small" type="button">Sonido: sí</button>
-        <button id="btn-velocidad" class="btn ghost small" type="button">Probar velocidad</button>
         <span id="tools-info" class="more"></span>
       </div>
     </section>
@@ -965,23 +964,6 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
     try { if (navigator.vibrate) navigator.vibrate(VIBRA[k]); } catch (e) {}
   }
 
-  async function probarVelocidad() {
-    const N = 8;
-    $("btn-velocidad").disabled = true;
-    $("tools-info").textContent = `Probando ${N} registros al mismo tiempo…`;
-    const tiempos = await Promise.all(Array.from({ length: N }, async () => {
-      const t0 = performance.now();
-      try { const r = await call("prueba", MODO, S.pin); return r && r.ok ? (performance.now() - t0) / 1000 : null; }
-      catch (e) { return null; }
-    }));
-    const ok = tiempos.filter((x) => x != null);
-    const f = (x) => x.toLocaleString("es-AR", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
-    $("tools-info").textContent = ok.length
-      ? `${N} registros simultáneos: promedio ${f(ok.reduce((a, b) => a + b, 0) / ok.length)} s · el más lento ${f(Math.max(...ok))} s` + (ok.length < N ? ` · ${N - ok.length} fallaron` : "") + ". El guardia no espera esto: el resultado sale al instante y se confirma después."
-      : "No se pudo probar: revisá la conexión.";
-    $("btn-velocidad").disabled = false;
-  }
-
   /* ---------- Setup ---------- */
   function pedirSetup(error) {
     $("control").hidden = true;
@@ -1046,7 +1028,6 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
   $("chip-guardia").addEventListener("click", () => pedirSetup(""));
   $("btn-actualizar").addEventListener("click", async () => { $("tools-info").textContent = "Actualizando…"; const ok = await refrescar(true); if (ok === null) $("tools-info").textContent = "Sin conexión: se usa la lista guardada en el celular."; sync(); });
   $("btn-sonido").addEventListener("click", () => { S.sonido = !S.sonido; store.set("sonido", S.sonido); $("btn-sonido").textContent = S.sonido ? "Sonido: sí" : "Sonido: no"; if (S.sonido) feedback("ok"); });
-  $("btn-velocidad").addEventListener("click", probarVelocidad);
   window.addEventListener("online", () => { S.retry = 0; sync(); refrescar(false); });
 
   let wake = null;
@@ -1103,7 +1084,6 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
       });
       return { ok: true, res };
     },
-    prueba() { return { ok: true }; },
   };
   window.__demo = Demo;
 
