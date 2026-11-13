@@ -229,7 +229,8 @@ main, .section, .alertas { grid-template-columns: minmax(0, 1fr); }
 #btn-alta { width: 100%; min-height: 52px; font-size: 16px; border-style: dashed; }
 .alta { display: grid; gap: 10px; border: 2px solid var(--primary); }
 .alta label, .alta legend { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-.alta .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.alta .dos { display: flex; flex-wrap: wrap; gap: 10px; }
+.alta .dos > div { flex: 1 1 11em; }
 .alta .dos > div { display: grid; gap: 6px; min-width: 0; }
 .alta fieldset { border: 0; padding: 0; margin: 4px 0 0; display: grid; gap: 8px; min-width: 0; }
 .alta .op { display: flex; gap: 10px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-size: 15px; font-weight: 600; color: var(--fg); text-transform: none; letter-spacing: 0; cursor: pointer; }
@@ -238,7 +239,7 @@ main, .section, .alertas { grid-template-columns: minmax(0, 1fr); }
 .alta .sel { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--ok-soft); color: var(--fg); font-weight: 700; }
 .alta .botones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
 .alta .botones .btn[type="submit"] { flex: 1 1 200px; }
-@media (max-width: 360px) { .alta .dos { grid-template-columns: 1fr; } }
+
 .confirmar { display: grid; gap: 10px; background: var(--warn-soft); border: 2px solid var(--warn); border-radius: 12px; padding: 12px 14px; font-size: 15px; font-weight: 600; color: var(--fg); margin-top: -6px; }
 .confirmar-btns { display: flex; flex-wrap: wrap; gap: 8px; }
 body[data-app="personal"] .big-input { font-size: clamp(22px, 6vw, 40px); }
@@ -264,18 +265,22 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .verdict.bad .big, .verdict.warn .big { font-size: clamp(22px, 6.6vw, 34px); }
 .verdict .who { font-size: clamp(17px, 5vw, 20px); }
 .verdict .meta { font-size: clamp(13px, 3.8vw, 15px); }
-.check-row { grid-template-columns: minmax(0, 1fr) auto; }
-@media (max-width: 379px) {
-  .check-row { grid-template-columns: minmax(0, 1fr); }
-  .check-row .btn { width: 100%; min-height: 52px; }
-  .big-input, body[data-app="personal"] .big-input { font-size: clamp(26px, 9vw, 36px); text-align: center; }
-}
+/* DNI field + button: the field always keeps room for a full DNI (10 characters of its own
+   font, so it also works with the phone's text size enlarged); when that doesn't fit next to
+   the button, the button moves below and both take the full width. */
+.check-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.check-row .big-input { flex: 1 1 calc(10.5ch + 34px); width: auto; }
+.check-row .btn { flex: 1 0 auto; min-height: 52px; }
 header.top .wrap { min-width: 0; }
 .chips { min-width: 0; max-width: 100%; }
 .chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .undo { flex-wrap: wrap; }
 .undo span, .sugerida span { flex: 1 1 160px; min-width: 0; }
-.stat .l { overflow-wrap: break-word; hyphens: auto; }
+/* Counters: when the three labels don't fit side by side, one moves to the next line
+   instead of splitting a word ("INGRE-SARON"). */
+.stats-row { display: flex; flex-wrap: wrap; gap: 10px 16px; }
+.stat { flex: 1 0 auto; }
+.stat .l { white-space: nowrap; letter-spacing: 0.06em; }
 .app-band .wrap { flex-wrap: wrap; }
 .app-band span { min-width: 0; overflow-wrap: break-word; }
 </style>
