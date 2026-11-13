@@ -1,6 +1,6 @@
 // Lets guards reopen the page without signal. Pages: network first, saved copy if offline.
 // Calls to Google (the spreadsheet) are never cached.
-const CACHE = "kalop-v4";
+const CACHE = "kalop-v5";
 const ARCHIVOS = ["./", "index.html", "invitados.html", "personal.html", "icon-192.png", "icon-512.png", "apple-touch-icon.png",
   "manifest-invitados.webmanifest", "manifest-personal.webmanifest", "logo.png", "logo-dark.png"];
 

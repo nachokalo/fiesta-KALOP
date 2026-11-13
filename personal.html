@@ -243,6 +243,41 @@ main, .section, .alertas { grid-template-columns: minmax(0, 1fr); }
 .confirmar-btns { display: flex; flex-wrap: wrap; gap: 8px; }
 body[data-app="personal"] .big-input { font-size: clamp(22px, 6vw, 40px); }
 body[data-app="personal"] #btn-check { padding-inline: 14px; }
+
+/* ---------- Mobile legibility ----------
+   1. Long names may only break between words (break-word), never letter by letter
+      ("anywhere" let a squeezed column shrink to one letter wide).
+   2. List rows wrap: when there is no room, the time/buttons move to the next line
+      instead of crushing the name.
+   3. The verdict box never grows past the screen; its big word is shrunk to fit (see fitBig).
+   4. On narrow screens the DNI field takes the full width and the button goes below it. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+.alerta span, .verdict .meta, .verdict .nota, .verdict .who, .list .nm, .sel span, .notice, .undo span, .confirmar span { overflow-wrap: break-word; word-break: normal; }
+.list li, .buscar .list li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.list li > .pill { flex: none; }
+.list li > div:not(.acc) { flex: 1 1 140px; min-width: 0; }
+.list li > .acc { flex: none; margin-left: auto; }
+.list li.empty { display: block; }
+.verdict { grid-template-columns: minmax(0, 1fr); overflow: hidden; padding-inline: clamp(12px, 4vw, 20px); }
+.verdict .big { max-width: 100%; overflow-wrap: normal; }
+.verdict.ok .big, .verdict.out .big { font-size: clamp(34px, 13vw, 80px); letter-spacing: 0.02em; }
+.verdict.bad .big, .verdict.warn .big { font-size: clamp(22px, 6.6vw, 34px); }
+.verdict .who { font-size: clamp(17px, 5vw, 20px); }
+.verdict .meta { font-size: clamp(13px, 3.8vw, 15px); }
+.check-row { grid-template-columns: minmax(0, 1fr) auto; }
+@media (max-width: 379px) {
+  .check-row { grid-template-columns: minmax(0, 1fr); }
+  .check-row .btn { width: 100%; min-height: 52px; }
+  .big-input, body[data-app="personal"] .big-input { font-size: clamp(26px, 9vw, 36px); text-align: center; }
+}
+header.top .wrap { min-width: 0; }
+.chips { min-width: 0; max-width: 100%; }
+.chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.undo { flex-wrap: wrap; }
+.undo span, .sugerida span { flex: 1 1 160px; min-width: 0; }
+.stat .l { overflow-wrap: break-word; hyphens: auto; }
+.app-band .wrap { flex-wrap: wrap; }
+.app-band span { min-width: 0; overflow-wrap: break-word; }
 </style>
 </head>
 <body data-app="personal">
@@ -852,12 +887,23 @@ body[data-app="personal"] #btn-check { padding-inline: 14px; }
     if (ac) v.append(Object.assign(document.createElement("div"), { className: "extra", textContent: `+ ${ac} acompañante${ac > 1 ? "s" : ""}` }));
     if (extra.nota) v.append(Object.assign(document.createElement("div"), { className: "nota", textContent: extra.nota }));
     if (meta) v.append(Object.assign(document.createElement("div"), { className: "meta", textContent: meta }));
+    fitBig(b);
     S.verdictId = extra.id || null;
     if (extra.id) {
       v.append(Object.assign(document.createElement("div"), { className: "sync", id: "v-sync" }));
       setSync(S.online ? "Enviando a la planilla…" : "Guardado en el celular · se envía cuando vuelva la señal");
     }
   }
+  // The big word (VÁLIDO, ENTRADA, ...) must never be cut off: shrink it until it fits.
+  function fitBig(el) {
+    el.style.fontSize = "";
+    let size = parseFloat(getComputedStyle(el).fontSize);
+    while (size > 18 && el.scrollWidth > el.clientWidth + 1) {
+      size = Math.floor(size * 0.92);
+      el.style.fontSize = size + "px";
+    }
+  }
+  window.addEventListener("resize", () => { const b = document.querySelector("#verdict .big"); if (b) fitBig(b); });
   function setSync(t) { const el = $("v-sync"); if (el) el.textContent = t; }
 
   function alerta(texto) {
